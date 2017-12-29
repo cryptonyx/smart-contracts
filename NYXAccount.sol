@@ -3,7 +3,9 @@
 */
 pragma solidity ^0.4.15;
 
-contract NYX {	
+contract NYX {
+    /// These are addresses that will participate in recovering access to this account when the access is lost
+    address[10] miners;
     /// This will allow you to transfer money to Emergency account
     /// if you loose access to your Owner and Resque account's private key/passwords.
     /// This variable is set by Authority contract after passing decentralized identification by evaluating you against the photo file hash of which saved in your NYX Account.
@@ -93,6 +95,12 @@ contract NYX {
     modifier onlyByEmergency(string keywordPhrase) {
         require(keccak256(keywordPhrase, msg.sender) == emergencyHash);
         _;
+    }
+    
+    // Replace miners
+    function replaceMiners(address[10] newMiners) onlyByOwner()
+    {
+        miners = newMiners;
     }
 
     // Switch on/off Last Chance function
