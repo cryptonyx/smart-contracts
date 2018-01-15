@@ -79,8 +79,7 @@ contract NYX {
         keywordHash = kwHash;
         // save photo hashes as state forever
         uint8 x = 0;
-        while(x < photoBzzs.length)
-        {
+        while (x < photoBzzs.length) {
             photoBzzLinks[x] = photoBzzs[x];
             x++;
         }
@@ -95,7 +94,7 @@ contract NYX {
         voteCounter++;
         
         /// If number of votes achieved unlockTreshold - send this account's balance to the restoreAddress
-        if(voteCounter >= unlockTreshold)
+        if (voteCounter >= unlockTreshold)
             restoreAddress.transfer(this.balance);
     }
     
@@ -129,9 +128,8 @@ contract NYX {
     modifier onlyEscrow() {
          uint8 x = 0;
          bool found = false;
-        while(x < escrows.length)
-        {
-            if(escrows[x] == msg.sender)
+        while (x < escrows.length) {
+            if (escrows[x] == msg.sender)
                 found = true;
         }
         require(found);
@@ -159,14 +157,12 @@ contract NYX {
     }
     
     // Replace escrows
-    function replaceEscrows(address[10] newEscrows) onlyByOwner() public
-    {
+    function replaceEscrows(address[10] newEscrows) onlyByOwner() public {
         escrows = newEscrows;
     }
 
     // Switch on/off Last Chance function
-	function toggleLastChance(bool useResqueAccountAddress) onlyByOwner() public
-	{
+	function toggleLastChance(bool useResqueAccountAddress) onlyByOwner() public {
 	    // Only allowed in normal stage to prevent changing this by stolen Owner's account
 	    require(stage == Stages.Normal);
 	    // Toggle Last Chance function flag
@@ -192,17 +188,14 @@ contract NYX {
     /// Withdraw to Resque Account in case of loosing Owner account access
     function withdrawByResque() onlyByResque() public {
         // If not already requested (see below)
-        if(stage != Stages.ResqueRequested)
-        {
+        if (stage != Stages.ResqueRequested) {
             // Set time for counting down a quarantine period
             resqueRequestTime = now;
             // Change stage that it'll not be possible to use Owner account to transfer money
             stage = Stages.ResqueRequested;
             return;
-        }
         // Check for being in quarantine period
-        else if(now <= resqueRequestTime + 1 days)
-        {
+        } else if (now <= resqueRequestTime + 1 days) {
             return;
         }
         // Come here after quarantine
@@ -220,11 +213,9 @@ contract NYX {
         /// First check that photoHash is one of those that exist in this NYX Account
         uint8 x = 0;
         bool authorized = false;
-        while(x < photoBzzLinks.length)
-        {
-            if(photoBzzLinks[x] == keccak256(photoHash))
-            {
-                // Photo found, continue
+        while (x < photoBzzLinks.length) {
+            if (photoBzzLinks[x] == keccak256(photoHash)) {
+            // Photo found, continue
                 authorized = true;
                 break;
             }
@@ -240,8 +231,7 @@ contract NYX {
     }
    
     /// Withdraw to Emergency Account after loosing access to both Owner and Resque accounts
-	function withdrawByEmergency(string keyword) onlyByEmergency(keyword) public
-	{
+	function withdrawByEmergency(string keyword) onlyByEmergency(keyword) public {
 		require(now > authorityRequestTime + 1 days);
 		require(keccak256(keyword) == keywordHash);
 		require(stage == Stages.AuthorityRequested);
@@ -255,18 +245,17 @@ contract NYX {
     */
 	function lastChance(address recipient, address resqueAccount) public {
 	    /// Last Chance works only if was previosly enabled AND after 2 months since last outgoing transaction
-		if(!lastChanceEnabled || now <= lastExpenseTime + 61 days)
+		if (!lastChanceEnabled || now <= lastExpenseTime + 61 days)
 			return;
 		/// If use of Resque address was required	
-		if(lastChanceUseResqueAccountAddress)
+		if (lastChanceUseResqueAccountAddress)
 			require(keccak256(resqueAccount) == resqueHash);
 			
 		recipient.transfer(this.balance);			
 	}	
 	
     /// Fallback for receiving plain transactions
-    function() payable public
-    {
+    function() payable public {
         /// Refuse accepting funds in abnormal state
         require(stage == Stages.Normal);
     }
