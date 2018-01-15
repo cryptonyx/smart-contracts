@@ -72,7 +72,7 @@ contract NYX {
     * kwHash: keccak256("your keyword phrase");
     * photoBzzs: array of swarm links to media materials of the account's owner - for future decentralized identification. 
     */
-    function NYX(bytes32 resqueAccountHash, address authorityAccount, bytes32 kwHash, bytes32[10] photoBzzs) {
+    function NYX(bytes32 resqueAccountHash, address authorityAccount, bytes32 kwHash, bytes32[10] photoBzzs) public {
         owner = msg.sender;
         resqueHash = resqueAccountHash;
         authority = authorityAccount;
@@ -87,7 +87,7 @@ contract NYX {
     }
     
     /// Escrow voting for access recovery. Only addresses registered in "escrows" allowed to vote.
-    function recoveryVote() onlyEscrow {
+    function recoveryVote() onlyEscrow public {
         /// Add vote to the identification state
         identificationState[msg.sender] = true;
         /// Send money to escrow for his vote 
@@ -100,18 +100,18 @@ contract NYX {
     }
     
     /// Set price for an escrow's vote. This amount will be transfered to each of the voting escrows.
-    function setRestoreAccessPrice(uint newPrice) onlyByOwner {
+    function setRestoreAccessPrice(uint newPrice) onlyByOwner public {
         restoreAccessPrice = newPrice;
     }
     
     /// Set required number of escrow's votes. When achieved, balance will be transfered to the restoreAddress.
-    function setUnlockTreshold(uint treshold) onlyByOwner {
+    function setUnlockTreshold(uint treshold) onlyByOwner public {
         unlockTreshold = treshold;
     }
     
     /// Publish restore request to the blockchain. Pass swarm link to the video which will be used to identify requester as owner of this (lost) account.
     /// Pass along with the function call some ether, the amount should be greater then price for a single escrows' vote.
-    function restoreAccess(string bzzVideo) payable {
+    function restoreAccess(string bzzVideo) payable public {
         /// Check that passed money is greater than price for a single escrow's vote
         require(msg.value >= restoreAccessPrice);
         
@@ -159,13 +159,13 @@ contract NYX {
     }
     
     // Replace escrows
-    function replaceEscrows(address[10] newEscrows) onlyByOwner()
+    function replaceEscrows(address[10] newEscrows) onlyByOwner() public
     {
         escrows = newEscrows;
     }
 
     // Switch on/off Last Chance function
-	function toggleLastChance(bool useResqueAccountAddress) onlyByOwner()
+	function toggleLastChance(bool useResqueAccountAddress) onlyByOwner() public
 	{
 	    // Only allowed in normal stage to prevent changing this by stolen Owner's account
 	    require(stage == Stages.Normal);
@@ -176,7 +176,7 @@ contract NYX {
 	}
 	
 	// Standard transfer Ether using Owner account
-    function transferByOwner(address recipient, uint amount) onlyByOwner() payable {
+    function transferByOwner(address recipient, uint amount) onlyByOwner() payable public {
         // Only in Normal stage possible
         require(stage == Stages.Normal);
         // Amount must not exeed this.balance
@@ -190,7 +190,7 @@ contract NYX {
     }
 
     /// Withdraw to Resque Account in case of loosing Owner account access
-    function withdrawByResque() onlyByResque() {
+    function withdrawByResque() onlyByResque() public {
         // If not already requested (see below)
         if(stage != Stages.ResqueRequested)
         {
@@ -215,7 +215,7 @@ contract NYX {
     * emergencyAccountHash: keccak256("your keyword phrase", address ResqueAccount)
     * photoHash: keccak256("one_of_your_photofile.pdf_data_passed_to_constructor_of_this_NYX_Account_upon_creation")
     */
-    function setEmergencyAccount(bytes32 emergencyAccountHash, bytes32 photoHash) onlyByAuthority() {
+    function setEmergencyAccount(bytes32 emergencyAccountHash, bytes32 photoHash) onlyByAuthority() public {
         require(photoHash != 0x0 && emergencyAccountHash != 0x0);
         /// First check that photoHash is one of those that exist in this NYX Account
         uint8 x = 0;
@@ -240,7 +240,7 @@ contract NYX {
     }
    
     /// Withdraw to Emergency Account after loosing access to both Owner and Resque accounts
-	function withdrawByEmergency(string keyword) onlyByEmergency(keyword)
+	function withdrawByEmergency(string keyword) onlyByEmergency(keyword) public
 	{
 		require(now > authorityRequestTime + 1 days);
 		require(keccak256(keyword) == keywordHash);
@@ -253,8 +253,7 @@ contract NYX {
     * Allows optionally unauthorized withdrawal to any address after loosing 
     * all authorization assets such as keyword phrase, photo files, private keys/passwords
     */
-	function lastChance(address recipient, address resqueAccount)
-	{
+	function lastChance(address recipient, address resqueAccount) public {
 	    /// Last Chance works only if was previosly enabled AND after 2 months since last outgoing transaction
 		if(!lastChanceEnabled || now <= lastExpenseTime + 61 days)
 			return;
@@ -266,10 +265,9 @@ contract NYX {
 	}	
 	
     /// Fallback for receiving plain transactions
-    function() payable
+    function() payable public
     {
         /// Refuse accepting funds in abnormal state
         require(stage == Stages.Normal);
     }
 }
-
