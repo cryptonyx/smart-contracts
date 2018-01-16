@@ -128,9 +128,14 @@ contract NYX {
     modifier onlyEscrow() {
          uint8 x = 0;
          bool found = false;
+<<<<<<< Updated upstream
+        while (x < escrows.length) {
+            if (escrows[x] == msg.sender)
+=======
         while(x < escrows.length)
         {
             if(escrows[x] == msg.sender) {
+>>>>>>> Stashed changes
                 found = true;
                 break;
             }
