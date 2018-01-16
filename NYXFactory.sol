@@ -72,8 +72,8 @@ contract NYX {
     * kwHash: keccak256("your keyword phrase");
     * photoBzzs: array of swarm links to media materials of the account's owner - for future decentralized identification. 
     */
-    function NYX(bytes32 resqueAccountHash, address authorityAccount, bytes32 kwHash, bytes32[10] photoBzzs) public {
-        owner = msg.sender;
+    function NYX(address creator, bytes32 resqueAccountHash, address authorityAccount, bytes32 kwHash, bytes32[10] photoBzzs) public {
+        owner = creator;
         resqueHash = resqueAccountHash;
         authority = authorityAccount;
         keywordHash = kwHash;
@@ -128,14 +128,9 @@ contract NYX {
     modifier onlyEscrow() {
          uint8 x = 0;
          bool found = false;
-<<<<<<< Updated upstream
-        while (x < escrows.length) {
-            if (escrows[x] == msg.sender)
-=======
         while(x < escrows.length)
         {
             if(escrows[x] == msg.sender) {
->>>>>>> Stashed changes
                 found = true;
                 break;
             }
@@ -269,4 +264,18 @@ contract NYX {
         /// Refuse accepting funds in abnormal state
         require(stage == Stages.Normal);
     }
+}
+
+
+/// Factory for creation NYX contracts
+contract NYXFactory {
+  function newNYX(bytes32 resqueAccountHash, address authorityAccount, bytes32 kwHash, bytes32[10] photoBzzs)
+    public
+    returns(address freshNYX)
+  {
+    /// Set caller as owner of the new NYX
+    NYX c = new NYX(msg.sender, resqueAccountHash, authorityAccount, kwHash, photoBzzs);
+    /// Address of the newly created NYX will be available in the output section of the transaction
+    return c;
+  }
 }
