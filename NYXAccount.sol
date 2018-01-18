@@ -56,6 +56,11 @@ contract NYX {
 	* swarmLinkVideo: video file provided by owner of this NYX Account for identification against swarmLinkPhoto
 	*/
     event NYXDecentralizedIdentificationRequest(address to, string swarmLinkVideo);
+    /*
+    *   Fraud protection. This event used by owner to cancel fraud recovery request
+    *   and publish fraud address to the blockchain
+    */
+    event NYXDecentralizedIdentificationRequestCancel(address fraudAddress);
 	
     /// Enumerates states of NYX Account
     enum Stages {
@@ -87,6 +92,8 @@ contract NYX {
     
     /// Escrow voting for access recovery. Only addresses registered in "escrows" allowed to vote.
     function recoveryVote() onlyEscrow public {
+        require(restoreAddress != 0x0);
+        
         /// Add vote to the identification state
         identificationState[msg.sender] = true;
         /// Send money to escrow for his vote 
@@ -121,6 +128,14 @@ contract NYX {
         /// Escrows are watching for this event on their client apps and use the data supplied with this event to participate in the identification
         NYXDecentralizedIdentificationRequest(msg.sender, bzzVideo);
     }
+    
+    /// Protect from fraud. Cancel fraud restore request
+    function cancelRestoreAccessRequest() onlyByOwner public {
+        /// Pass fraud restore address along with event
+        NYXDecentralizedIdentificationRequestCancel(restoreAddress);
+        restoreAddress = 0x0;
+    }
+    
     
     /// Modifiers
     
