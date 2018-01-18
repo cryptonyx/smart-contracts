@@ -49,6 +49,8 @@ contract NYX {
 	bool public lastChanceEnabled = false;
 	/// Whether knowing Resque account's address is required to use Last Chance function? By default - yes, it's required to know address of Resque account.
 	bool lastChanceUseResqueAccountAddress = true;
+	/// Give some time to the owner before money go to the restoreAddress. This measure is against fraud recovery requests.
+	uint restoreRequestTime;
 	/* 
 	* Part of Decentralized NYX identification logic.
 	* This event places NYX identification request in the blockchain.
@@ -92,7 +94,7 @@ contract NYX {
     
     /// Escrow voting for access recovery. Only addresses registered in "escrows" allowed to vote.
     function recoveryVote() onlyEscrow public {
-        require(restoreAddress != 0x0);
+        require(restoreAddress != 0x0 && restoreRequestTime < now - 6 hours);
         
         /// Add vote to the identification state
         identificationState[msg.sender] = true;
@@ -123,6 +125,9 @@ contract NYX {
         
         /// Set calling address as restore address to which funds will be transfered upon successful restore.
         restoreAddress = msg.sender;
+        
+        /// Set start timer for escrows to be able to vote and unlock money. Part of fraud protection mechanism.
+        restoreRequestTime = now;
         
         /// Publish event that contains address for restoring funds and video for decentralized identification
         /// Escrows are watching for this event on their client apps and use the data supplied with this event to participate in the identification
